@@ -11,5 +11,5 @@ async def command_start(message: types.Message) -> None:
     
     
 def register_user_handlers(dispatcher: Dispatcher):
-    """ Register user handlers """
+    """ Registering user handlers """
     dispatcher.register_message_handler(command_start, commands=["start"])

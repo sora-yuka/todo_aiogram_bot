@@ -1,5 +1,6 @@
 import asyncio
 from aiogram import Bot, Dispatcher, types
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from handlers.user_handlers import register_user_handlers
 from handlers.todo_handlers import register_todo_handlers
 from decouple import config
@@ -16,7 +17,7 @@ class TelegramBotInterface:
     """ Bot entry point """
     async def main(self) -> None:
         bot = Bot(config("TOKEN_API"))
-        dispatcher = Dispatcher(bot)
+        dispatcher = Dispatcher(bot, storage = MemoryStorage())
         HandlerRegisterInterface().register_handler(dispatcher)
         
         try:
