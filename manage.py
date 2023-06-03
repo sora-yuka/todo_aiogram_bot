@@ -7,7 +7,7 @@ from decouple import config
 
 
 class HandlerRegisterInterface:
-    """ Register handlers """
+    """ Register any handlers """
     def register_handler(self, dispatcher: Dispatcher) -> None:
         register_user_handlers(dispatcher)
         register_todo_handlers(dispatcher)
