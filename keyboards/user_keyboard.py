@@ -6,7 +6,8 @@ def get_user_keyboard() -> ReplyKeyboardMarkup:
         keyboard=[
             [
                 KeyboardButton("Get ToDo list"), KeyboardButton("Add point to ToDo list"), 
-                KeyboardButton("Edit ToDo list"), KeyboardButton("Delete point from ToDo list")
+                KeyboardButton("Edit ToDo list"), KeyboardButton("Delete point from ToDo list"),
+                KeyboardButton("Get detail overview")
             ]
         ]
     )

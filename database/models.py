@@ -7,7 +7,15 @@ from decouple import config
 Base = declarative_base()
 
 
-class ToDoModel(Base):
+class User(Base):
+    """ User database """
+    __tablename__ = "users"
+    
+    id = Column("id", Integer, primary_key=True)
+    
+
+
+class TodoModel(Base):
     """ Data writing """
     __tablename__ = "in_process"
     
@@ -27,20 +35,16 @@ class ToDoModel(Base):
         return f"{self.id}. {self.title}"
     
 
+class DetailTodo(TodoModel):
+    def __repr__(self):
+        super().__repr__()
+        return (f"Title: {self.title}\nDescription: {self.description}\n"
+                f"Deadline: {self.deadline}\nCreated_at: {self.created_at}")
+    
+
 engine = create_engine(config("DATABASE_URL"))
 Base.metadata.create_all(bind=engine)
 
 Session = sessionmaker(bind=engine)
 session = Session()
 
-# session.add(ToDoModel("Make a todo bot", 
-#                       "Make a telegram bot, based on python class, and which is follow the SOLID princple", 
-#                       "05.06.23"))
-# session.commit()
-
-# queryset = session.query(ToDoModel).all()
-# for item in queryset:
-#     print(item)
-
-# queryset = session.query(ToDoModel).filter(ToDoModel.id == "3")
-# print([item for item in queryset])

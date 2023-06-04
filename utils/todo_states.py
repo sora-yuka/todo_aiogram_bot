@@ -6,3 +6,8 @@ class ToDoStatesGroup(StatesGroup):
     title = State()
     description = State()
     deadline = State()
+    
+
+class DetailViewStatesGroup(StatesGroup):
+    """ Detail state declaration for point """
+    id = State()

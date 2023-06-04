@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+import os
+os.system("chmod +x manage.py")
+
 import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
