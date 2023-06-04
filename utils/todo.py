@@ -1,35 +1,53 @@
-from database.models import session, TodoModel, DetailTodo
+from database.models import Session, TodoModel, DetailTodo, update
 
 class Get:
     @classmethod
-    def get_todo_list(self, owner) -> list:
-        queryset = session.query(TodoModel).filter(TodoModel.owner == owner)
-        query = [item for item in queryset]
-        if query != []:
+    def get_todo_list(self, owner: str) -> str:
+        with Session() as session:
+            queryset = session.query(TodoModel).filter(TodoModel.owner == owner)
+            query = [item for item in queryset]
             result = ""
             for i in range(len(query)):
                 result += f"{query[i]}\n"
             return result
-        else:
-            return "Nothing here."
-    
+            
     
 class Detail:
     @classmethod
-    def get_detail_point(self, id, username) -> list:
-        queryset = session.query(DetailTodo)
-        query = queryset.filter(DetailTodo.id == id) and queryset.filter(DetailTodo.owner == username)
-        result = [item for item in query]
-        return result[0]
-
+    def get_detail_point(self, id: int, username: str) -> list:
+        with Session() as session:
+            queryset = session.query(DetailTodo)
+            query = queryset.filter(DetailTodo.id == id).filter(DetailTodo.owner == username)
+            result = [item for item in query]
+            try:
+                return result[0]
+            except IndexError:
+                return "There is no such unique id in your Todo-list!"
+            
 
 class Add:
-    def __init__(self, todo_title, todo_description, todo_deadline) -> None:
-        self.todo_title = todo_title
-        self.todo_description = todo_description
-        self.todo_deadline = todo_deadline
+    def __init__(self, title: str, description: str, deadline: str) -> None:
+        self.title = title
+        self.description = description
+        self.deadline = deadline
     
     def add_point_to_list(self, username):
-        point = TodoModel(self.todo_title, self.todo_description, self.todo_deadline, username)
-        session.add(point)
-        session.commit()
+        point = TodoModel(self.title, self.description, self.deadline, username)
+        with Session() as session:
+            session.add(point)
+            session.commit()
+            
+
+class Patch:
+    @classmethod
+    def update_title(self, id: int, new_title: str) -> None:
+        statement = (
+            update(TodoModel).where(TodoModel.id == id).values(title = new_title)
+        )
+    
+    # def update_description(self, id: int, new_description: str) -> None:
+    #     statement = (
+    #         update(TodoModel).where(TodoModel.id == id).values(description = new_description)
+    #     )
+        
+    # def update_deadline(self, id: int, new_description)

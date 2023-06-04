@@ -1,7 +1,8 @@
-from sqlalchemy import String, Text, Integer, DateTime, Column, create_engine, ForeignKey
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import update
 from sqlalchemy.sql import func
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base
+from sqlalchemy import String, Text, Integer, DateTime, Column, create_engine, ForeignKey
 from decouple import config
 
 Base = declarative_base()
@@ -26,24 +27,32 @@ class TodoModel(Base):
         self.owner = owner
     
     def __repr__(self):
-        return f"unique id: {self.id};  title: {self.title}"
+        return f"<b>unique id:</b>  {self.id};    <b>title:</b>  {self.title}"
     
 
 class DetailTodo(TodoModel):
     def __repr__(self):
         super().__repr__()
-        return (f"Title: {self.title}\nDescription: {self.description}\n"
-                f"Deadline: {self.deadline}\nCreated_at: {self.created_at}")
+        return (f"<b>Unique id:</b>  {self.id}\n<b>Title:</b>  {self.title}\n<b>Description:</b>  {self.description}\n"
+                f"<b>Deadline:</b>  {self.deadline}\n<b>Created_at:</b>  {self.created_at}")
     
 
 engine = create_engine(config("DATABASE_URL"))
 Base.metadata.create_all(bind=engine)
 
 Session = sessionmaker(bind=engine)
+
 session = Session()
 
+# stmt = (
+#     update(TodoModel).where(TodoModel.id == 1).values(title="Test 8")
+# )
+# session.execute(stmt)
+# session.commit()
 
 # queryset = session.query(TodoModel).filter(TodoModel.owner == "yukl_sora")
-# result = [item for item in queryset]
+queryset = session.query(DetailTodo).filter(DetailTodo.id==5).filter(DetailTodo.owner == "yukl_sora")
+result = [item for item in queryset]
 # for i in range(len(result)):
 #     print(result[i])
+# print(result)

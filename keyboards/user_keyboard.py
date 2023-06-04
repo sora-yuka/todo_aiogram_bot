@@ -5,9 +5,9 @@ def get_user_keyboard() -> ReplyKeyboardMarkup:
         resize_keyboard=True,
         keyboard=[
             [
-                KeyboardButton("Get ToDo list"), KeyboardButton("Add point to ToDo list"), 
-                KeyboardButton("Edit ToDo list"), KeyboardButton("Delete point from ToDo list"),
-                KeyboardButton("Get detail overview")
+                KeyboardButton("Get Todo-list"), KeyboardButton("Get detailed overview"), 
+                KeyboardButton("Add point to Todo-list"), KeyboardButton("Edit point from Todo-list"), 
+                KeyboardButton("Delete point from Todo-list"),
             ]
         ]
     )
