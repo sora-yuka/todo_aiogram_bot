@@ -26,13 +26,13 @@ class TodoModel(Base):
         self.owner = owner
     
     def __repr__(self):
-        return f"<b>unique id:</b>  {self.id};    <b>title:</b>  {self.title}"
+        return f"<b>unique id:</b>  {self.id};    <b>todo:</b>  {self.title}"
     
 
 class DetailTodo(TodoModel):
     def __repr__(self):
         super().__repr__()
-        return (f"<b>Unique id:</b>  {self.id}\n<b>Title:</b>  {self.title}\n<b>Description:</b>  {self.description}\n"
+        return (f"<b>Unique id:</b>  {self.id}\n<b>Todo:</b>  {self.title}\n<b>Description:</b>  {self.description}\n"
                 f"<b>Deadline:</b>  {self.deadline}\n<b>Created_at:</b>  {self.created_at}")
     
 

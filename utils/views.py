@@ -77,4 +77,4 @@ class Delete:
         )
         with Session() as session:
             session.execute(statement)
-            sessino.commit()
+            session.commit()

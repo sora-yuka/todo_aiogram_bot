@@ -14,16 +14,25 @@ class DetailViewStatesGroup(StatesGroup):
 
     
 class PatchStateGroup(StatesGroup):
+    """ Patch state declaration """
     id = State()
 
     
 class TitlePatchState(StatesGroup):
+    """ Title state for patch """
     title = State()
     
 
 class DescriptionPatchState(StatesGroup):
+    """ Description state for patch """
     description = State()
     
     
 class DeadlinePatchState(StatesGroup):
+    """ Deadline state for patch """
     deadline = State()
+    
+
+class DeleteState(StatesGroup):
+    """ Delete state declaraion """
+    id = State()
