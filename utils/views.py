@@ -1,4 +1,6 @@
-from database.models import Session, TodoModel, DetailTodo, update
+from sqlalchemy import update, delete
+from database.models import Session, TodoModel, DetailTodo
+
 
 class Get:
     @classmethod
@@ -44,10 +46,35 @@ class Patch:
         statement = (
             update(TodoModel).where(TodoModel.id == id).values(title = new_title)
         )
+        with Session() as session:
+            session.execute(statement)
+            session.commit()
     
-    # def update_description(self, id: int, new_description: str) -> None:
-    #     statement = (
-    #         update(TodoModel).where(TodoModel.id == id).values(description = new_description)
-    #     )
-        
-    # def update_deadline(self, id: int, new_description)
+    @classmethod
+    def update_description(self, id: int, new_description: str) -> None:
+        statement = (
+            update(TodoModel).where(TodoModel.id == id).values(description = new_description)
+        )
+        with Session() as session:
+            session.execute(statement)
+            session.commit()
+     
+    @classmethod
+    def update_deadline(self, id: int, new_deadline) -> None:
+        statement = (
+            update(TodoModel).where(TodoModel.id == id).values(deadline = new_deadline)
+        )
+        with Session() as session:
+            session.execute(statement)
+            session.commit()
+            
+
+class Delete:
+    @classmethod
+    def delete_point(self, id: int):
+        statement = (
+            delete(TodoModel).where(TodoModel.id == id)
+        )
+        with Session() as session:
+            session.execute(statement)
+            sessino.commit()

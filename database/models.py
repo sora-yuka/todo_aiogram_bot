@@ -1,4 +1,3 @@
-from sqlalchemy import update
 from sqlalchemy.sql import func
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import declarative_base
@@ -41,18 +40,3 @@ engine = create_engine(config("DATABASE_URL"))
 Base.metadata.create_all(bind=engine)
 
 Session = sessionmaker(bind=engine)
-
-session = Session()
-
-# stmt = (
-#     update(TodoModel).where(TodoModel.id == 1).values(title="Test 8")
-# )
-# session.execute(stmt)
-# session.commit()
-
-# queryset = session.query(TodoModel).filter(TodoModel.owner == "yukl_sora")
-queryset = session.query(DetailTodo).filter(DetailTodo.id==5).filter(DetailTodo.owner == "yukl_sora")
-result = [item for item in queryset]
-# for i in range(len(result)):
-#     print(result[i])
-# print(result)

@@ -11,3 +11,19 @@ class ToDoStatesGroup(StatesGroup):
 class DetailViewStatesGroup(StatesGroup):
     """ Detail state declaration for point """
     id = State()
+
+    
+class PatchStateGroup(StatesGroup):
+    id = State()
+
+    
+class TitlePatchState(StatesGroup):
+    title = State()
+    
+
+class DescriptionPatchState(StatesGroup):
+    description = State()
+    
+    
+class DeadlinePatchState(StatesGroup):
+    deadline = State()

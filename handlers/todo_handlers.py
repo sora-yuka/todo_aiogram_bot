@@ -2,10 +2,13 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher.filters import Text
 from aiogram.types import ReplyKeyboardRemove as close_keyboard
 from aiogram.utils.exceptions import MessageTextIsEmpty
-from utils.todo_states import ToDoStatesGroup, DetailViewStatesGroup
-from utils.todo import Get, Detail, Add, Patch
 from keyboards.user_keyboard import get_user_keyboard
 from keyboards.todo_keyboard import get_patch_keyboard
+from utils.views import Get, Detail, Add, Patch
+from utils.todo_states import (
+    ToDoStatesGroup, DetailViewStatesGroup, PatchStateGroup, 
+    TitlePatchState, DescriptionPatchState, DeadlinePatchState
+)
 
 
 class GetTodo:
@@ -21,19 +24,14 @@ class GetTodo:
             await message.answer("Todo-list is empty.")
         
         
-class DetailTodo:
+class DetailTodo(GetTodo):
     async def ask_point_id(self, message: types.Message) -> None:
-        try:
-            await message.answer(
-                Get.get_todo_list(message.from_user.username),
-                parse_mode="html")
-            await message.answer(
-                "Send me unique point id to get detailed information.",
-                reply_markup = close_keyboard(),
-            )
-            await DetailViewStatesGroup.id.set()
-        except MessageTextIsEmpty as _ex:
-            await message.answer("Todo-list is empty.")
+        await super().get_todo_list(message)
+        await message.answer(
+            "Send me unique point id to get detailed information.",
+            reply_markup = close_keyboard(),
+        )
+        await DetailViewStatesGroup.id.set()
         
     async def get_detail_point(self, message: types.Message, state) -> None:
         async with state.proxy() as data:
@@ -83,72 +81,97 @@ class PostTodo:
         await state.finish()
     
     
-class PatchTodo:
+class PatchTodo(GetTodo):
     async def ask_point_id(self, message: types.Message) -> None:
-        try:
-            await message.answer(
-                Get.get_todo_list(message.from_user.username),
-                parse_mode="html",
-            )
-            await message.answer(
-                "Send me unique id to edit point",
+        await super().get_todo_list(message)
+        await message.answer(
+                "Send me a unique point id to select and edit.",
                 reply_markup = close_keyboard(),
             )
-            await DetailViewStatesGroup.id.set()
-        except MessageTextIsEmpty as _ex:
-            await message.answer("Todo-list is empty.")
+        await PatchStateGroup.id.set()
     
-    async def get_patch_id(self, message: types.Message, state) -> None:
+    async def get_point_id(self, message: types.Message, state) -> None:
         global point_id
         async with state.proxy() as data:
             data["id"] = message.text
             point_id = data["id"]
+            result = Detail.get_detail_point(
+                point_id, message.from_user.username
+            )
             await message.answer(
-                text = Detail.get_detail_point(data["id"], message.from_user.username),
+                text = result,
                 parse_mode = "html",
-                reply_markup = close_keyboard(),
+                reply_markup = get_patch_keyboard(),
+            )
+        if result != "There is no such unique id in your Todo-list!":
+            await message.answer(
+                "What do you want to edit?", 
+                reply_markup = get_patch_keyboard()
+            )
+        else:
+            await message.answer(
+                "Please, try again.", reply_markup = get_user_keyboard()
             )
         await state.finish()
         
-#$  ^^^^^^^^^^
-#@ got point id 
-        
-    async def patch_preferences(message: types.Message) -> None:
+    async def ask_new_title(self, message: types.Message) -> None:
         await message.answer(
-            "What do you want to edit?", 
-            reply_markup = get_patch_keyboard()
-        )
-
-#$  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#@ asking for prefences: title, description or deadline
-        
-    async def ask_new_title(message: types.Message) -> None:
-        message.answer(
-            "Type new title for point.",
+            "Good. Now, enter a new title for the point.",
             reply_markup = close_keyboard()
         )
-        await ToDoStatesGroup.title.set()
+        await TitlePatchState.title.set()
     
-    async def load_new_title(message: types.Message, state) -> None:
+    async def ask_new_description(self, message: types.Message) -> None:
+        await message.answer(
+            "Cool, enter a new description for the point.",
+            reply_markup = close_keyboard()
+        )
+        await DescriptionPatchState.description.set()
+        
+    async def ask_new_deadline(self, message: types.Message) -> None:
+        await message.answer(
+            "OK. You can enter a new deadline for the point.",
+            reply_markup = close_keyboard()
+        )
+        await DeadlinePatchState.deadline.set()
+        
+    async def load_new_title(self, message: types.Message, state) -> None:
         async with state.proxy() as data:
-            data["title"] = title
-        Patch.update_title(point_id, data["title"])
+            data["title"] = message.text
+            Patch().update_title(point_id, data["title"])
+        await message.answer("Updated successfully!", reply_markup = get_user_keyboard())
         await state.finish()
         
-#$  ^^^^^^^^^^
-#@ title loaded
+    async def load_new_description(self, message: types.Message, state) -> None:
+        async with state.proxy() as data:
+            data["description"] = message.text
+            Patch.update_description(point_id, data["description"])
+        await message.answer("Updated successfully!", reply_markup = get_user_keyboard())
+        await state.finish()
         
+    async def load_new_deadline(self, message: types.Message, state) -> None:
+        async with state.proxy() as data:
+            data["deadline"] = message.text
+            Patch.update_deadline(point_id, data["deadline"])
+        await message.answer("Updated successfully!", reply_markup = get_user_keyboard())
+        await state.finish()
 
 def register_todo_handlers(dispatcher: Dispatcher) -> None:
     """ Registering todo handlers """
     dispatcher.register_message_handler(GetTodo().get_todo_list, Text(equals="Get Todo-list"))
     dispatcher.register_message_handler(DetailTodo().ask_point_id, Text(equals="Get detailed overview"))
     dispatcher.register_message_handler(DetailTodo().get_detail_point, state=DetailViewStatesGroup.id)
+    
     dispatcher.register_message_handler(PostTodo().add_point, Text(equals="Add point to Todo-list"))
     dispatcher.register_message_handler(PostTodo().load_point_title, state=ToDoStatesGroup.title)
     dispatcher.register_message_handler(PostTodo().load_point_description, state=ToDoStatesGroup.description)
     dispatcher.register_message_handler(PostTodo().load_point_deadline, state=ToDoStatesGroup.deadline)
-    dispatcher.register_message_handler(PatchTodo().ask_point_id, Text(equals="Edit point from Todo-list"))
-    dispatcher.register_message_handler(PatchTodo().get_patch_id, state=DetailViewStatesGroup.id)
-    dispatcher.register_message_handler(Patch().ask_new_title, Text(equals="Title"))
     
+    dispatcher.register_message_handler(PatchTodo().ask_point_id, Text(equals="Edit point from Todo-list"))
+    dispatcher.register_message_handler(PatchTodo().get_point_id, state=PatchStateGroup.id)
+    dispatcher.register_message_handler(PatchTodo().ask_new_title, Text(equals="Title"))
+    dispatcher.register_message_handler(PatchTodo().ask_new_description, Text(equals="Description"))
+    dispatcher.register_message_handler(PatchTodo().ask_new_deadline, Text(equals="Deadline"))
+    dispatcher.register_message_handler(PatchTodo().load_new_title, state=TitlePatchState.title)
+    dispatcher.register_message_handler(PatchTodo().load_new_description, state=DescriptionPatchState.description)
+    dispatcher.register_message_handler(PatchTodo().load_new_deadline, state=DeadlinePatchState.deadline)
