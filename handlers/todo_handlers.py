@@ -51,14 +51,16 @@ class GetTodo:
                 parse_mode="html",
                 reply_markup = get_user_inlinekeyboard(),
             )
-            await message.answer("Following actions are available to you 😉")
         else:
             await message.answer_photo(
                     photo = "https://lychee-redmine.jp/wp-content/uploads/2022/10/24875664_m_0.jpg",
                     caption = detailed_view,
                     parse_mode="html",
-                    reply_markup = get_user_keyboard(),
+                    reply_markup = get_user_inlinekeyboard(),
                 )
+        await message.answer(
+            "Following actions are available to you 😉", reply_markup = get_user_keyboard()
+        )
         await state.finish()
 
 

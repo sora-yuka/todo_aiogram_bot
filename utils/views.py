@@ -71,9 +71,9 @@ class Patch:
 
 class Delete:
     @classmethod
-    def delete_point(self, id: int):
+    def delete_point(self, id: int, username):
         statement = (
-            delete(TodoModel).where(TodoModel.id == id)
+            delete(TodoModel).where(TodoModel.id == id).where(TodoModel.owner == username)
         )
         with Session() as session:
             session.execute(statement)
