@@ -7,7 +7,7 @@ def get_patch_keyboard() -> ReplyKeyboardMarkup:
         keyboard=[
             [
                 KeyboardButton("Title"), KeyboardButton("Description"), 
-                KeyboardButton("Deadline"),
+                KeyboardButton("Deadline"), KeyboardButton("Cancel")
             ]
         ]
     )

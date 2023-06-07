@@ -31,8 +31,3 @@ class DescriptionPatchState(StatesGroup):
 class DeadlinePatchState(StatesGroup):
     """ Deadline state for patch """
     deadline = State()
-    
-
-class DeleteState(StatesGroup):
-    """ Delete state declaraion """
-    id = State()
