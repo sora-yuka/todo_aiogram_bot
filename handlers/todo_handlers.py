@@ -5,7 +5,7 @@ from aiogram.utils.exceptions import MessageTextIsEmpty
 from keyboards.user_keyboard import (
     get_user_keyboard, get_user_inlinekeyboard, inline_interrupt
 )
-from keyboards.todo_keyboard import get_patch_keyboard
+from keyboards.todo_keyboard import get_patch_keyboard, interrupt_patch_keyboard, delete_keyboard
 from utils.views import Get, Detail, Add, Patch, Delete
 from utils.todo_states import (
     ToDoStatesGroup, DetailViewStatesGroup, PatchStateGroup, 
@@ -14,55 +14,58 @@ from utils.todo_states import (
 
             
 class GetTodo:
-    async def get_todo_list(self, message: types.Message) -> None:
-        await message.answer("Trying to get data...")
-        try:
-            await message.answer_photo(
-                photo = "https://backlog.com/wp-blog-app/uploads/sites/6/2019/11/7dd9a07b407f4382a535340e39ab24e2.png",
-                caption = Get.get_todo_list(message.from_user.username),
-                parse_mode = "html",
-                reply_markup = get_user_keyboard()
-            )
-        except MessageTextIsEmpty as _ex:
-            await message.answer("Todo-list is empty.")
-            
-        await message.answer(
-            "Send me unique point id to get detailed information.",
-            reply_markup = inline_interrupt(),
-        )
-        await DetailViewStatesGroup.id.set()
-        
-    async def interrupt_detail_view(self, callback: types.CallbackQuery, state) -> None:
-        if callback.data == "cancel":
-            await callback.answer("You interrupted detailed view!")
-            await state.finish()
-        
-    async def get_detail_point(self, message: types.Message, state) -> None:
-        async with state.proxy() as data:
-            data["id"] = message.text   
-        detailed_view = Detail.get_detail_point(
-            data["id"], message.from_user.username
-        )
-        
-        if not detailed_view.description == "Done":
-            await message.answer_photo(
-                photo = "https://assets.st-note.com/production/uploads/images/51552657/123ed2281350328a8189fb4a4a11a296.png",
-                caption = detailed_view,
-                parse_mode="html",
-                reply_markup = get_user_inlinekeyboard(),
-            )
-        else:
-            await message.answer_photo(
-                    photo = "https://lychee-redmine.jp/wp-content/uploads/2022/10/24875664_m_0.jpg",
-                    caption = detailed_view,
-                    parse_mode="html",
-                    reply_markup = get_user_inlinekeyboard(),
+        async def get_todo_list(self, message: types.Message) -> None:
+            await message.answer("Trying to get data...")
+            try:
+                await message.answer_photo(
+                    photo = "https://backlog.com/wp-blog-app/uploads/sites/6/2019/11/7dd9a07b407f4382a535340e39ab24e2.png",
+                    caption = Get.get_todo_list(message.from_user.username),
+                    parse_mode = "html",
+                    reply_markup = get_user_keyboard()
                 )
-        await message.answer(
-            "Following actions are available to you 😉", reply_markup = get_user_keyboard()
-        )
-        await state.finish()
-
+            except MessageTextIsEmpty as _ex:
+                await message.answer("Todo-list is empty.")
+                
+            await message.answer(
+                "Send me unique point id to get detailed information.",
+                reply_markup = inline_interrupt(),
+            )
+            await DetailViewStatesGroup.id.set()
+            
+        async def interrupt_detail_view(self, callback: types.CallbackQuery, state) -> None:
+            if callback.data == "cancel":
+                await callback.answer("You interrupted detailed view!")
+                await state.finish()
+            
+        async def get_detail_point(self, message: types.Message, state) -> None:
+            async with state.proxy() as data:
+                data["id"] = message.text   
+            try:
+                detailed_view = Detail.get_detail_point(
+                    data["id"], message.from_user.username
+                )
+                
+                if not detailed_view.description == "Done":
+                    await message.answer_photo(
+                        photo = "https://assets.st-note.com/production/uploads/images/51552657/123ed2281350328a8189fb4a4a11a296.png",
+                        caption = detailed_view,
+                        parse_mode="html",
+                        reply_markup = get_user_inlinekeyboard(),
+                    )
+                else:
+                    await message.answer_photo(
+                            photo = "https://lychee-redmine.jp/wp-content/uploads/2022/10/24875664_m_0.jpg",
+                            caption = detailed_view,
+                            parse_mode="html",
+                            reply_markup = delete_keyboard(),
+                        )
+                await message.answer(
+                    "Following actions are available to you 😉", reply_markup = get_user_keyboard()
+                )
+                await state.finish()
+            except:
+                await message.answer("First, you need to cancel action")
+                
 
 class PostTodo:
     async def add_point(self, message: types.Message) -> None:
@@ -121,6 +124,7 @@ class PatchDeleteDoneTodo:
                 await callback.message.answer(
                     "Deleted successfully!", reply_markup = get_user_keyboard()
                 )
+                await callback.answer("Data updated!")
             except IndexError:
                 await callback.answer("Something get wrong!")
         else:
@@ -139,49 +143,67 @@ class PatchingTodo:
     async def ask_new_title(self, message: types.Message) -> None:
         await message.answer(
             "Good. Now, enter a new title for the point.",
-            reply_markup = close_keyboard()
+            reply_markup = interrupt_patch_keyboard()
         )
         await TitlePatchState.title.set()
     
     async def ask_new_description(self, message: types.Message) -> None:
         await message.answer(
             "Cool, enter a new description for the point.",
-            reply_markup = close_keyboard()
+            reply_markup = interrupt_patch_keyboard()
         )
         await DescriptionPatchState.description.set()
         
     async def ask_new_deadline(self, message: types.Message) -> None:
         await message.answer(
             "OK. You can enter a new deadline for the point.",
-            reply_markup = close_keyboard()
+            reply_markup = interrupt_patch_keyboard()
         )
         await DeadlinePatchState.deadline.set()
         
     async def load_new_title(self, message: types.Message, state) -> None:
         async with state.proxy() as data:
             data["title"] = message.text
-            Patch().update_title(point_id, data["title"])
-        await message.answer(
-            "Updated successfully!", reply_markup = get_user_keyboard()
-        )
+            
+            if data["title"] != "Cancel":
+                Patch().update_title(point_id, data["title"])    
+                await message.answer(
+                    "Updated successfully!", reply_markup = get_user_keyboard()
+                )
+            else:
+                await message.answer(
+                    "You interrupted the title updating.", reply_markup = get_user_keyboard()
+                )
         await state.finish()
         
     async def load_new_description(self, message: types.Message, state) -> None:
         async with state.proxy() as data:
             data["description"] = message.text
-            Patch.update_description(point_id, data["description"])
-        await message.answer(
-            "Updated successfully!", reply_markup = get_user_keyboard()
-        )
+            
+            if data["description"] != "Cancel":
+                Patch.update_description(point_id, data["description"])
+                await message.answer(
+                    "Updated successfully!", reply_markup = get_user_keyboard()
+                )
+            else:
+                await message.answer(
+                    "You interrupted the description updating."
+                )
         await state.finish()
         
     async def load_new_deadline(self, message: types.Message, state) -> None:
         async with state.proxy() as data:
             data["deadline"] = message.text
-            Patch.update_deadline(point_id, data["deadline"])
-        await message.answer(
-            "Updated successfully!", reply_markup = get_user_keyboard()
-        )
+            
+            if data["deadline"] != "Cancel":    
+                Patch.update_deadline(point_id, data["deadline"])
+                await message.answer(
+                    "Updated successfully!", reply_markup = get_user_keyboard()
+                )
+            else:
+                await message.answer(
+                    "You interrupted the deadline updating."
+                )
         await state.finish()
             
 

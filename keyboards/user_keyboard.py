@@ -7,6 +7,7 @@ from aiogram.types import (
 def get_user_keyboard() -> ReplyKeyboardMarkup:
     main_keyboard = ReplyKeyboardMarkup(
         resize_keyboard=True,
+        one_time_keyboard=True,
         keyboard=[
             [
                 KeyboardButton("Get points"), KeyboardButton("Add point"),

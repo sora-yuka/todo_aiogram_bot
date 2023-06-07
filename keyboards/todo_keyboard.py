@@ -1,4 +1,4 @@
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
 
 def get_patch_keyboard() -> ReplyKeyboardMarkup:
     main_keyboard = ReplyKeyboardMarkup(
@@ -7,7 +7,31 @@ def get_patch_keyboard() -> ReplyKeyboardMarkup:
         keyboard=[
             [
                 KeyboardButton("Title"), KeyboardButton("Description"), 
-                KeyboardButton("Deadline"), KeyboardButton("Cancel")
+                KeyboardButton("Deadline"),
+            ]
+        ]
+    )
+    
+    return main_keyboard
+
+def interrupt_patch_keyboard() -> ReplyKeyboardMarkup:
+    main_keyboard = ReplyKeyboardMarkup(
+        resize_keyboard=True,
+        one_time_keyboard=True,
+        keyboard=[
+            [
+                KeyboardButton("Cancel")
+            ]
+        ]
+    )
+    
+    return main_keyboard
+
+def delete_keyboard() -> InlineKeyboardMarkup:
+    main_keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton("Delete", callback_data="delete")
             ]
         ]
     )
