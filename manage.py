@@ -21,14 +21,24 @@ class TelegramBotInterface:
     """ Bot entry point """
     async def main(self) -> None:
         bot = Bot(config("TOKEN_API"))
-        dispatcher = Dispatcher(bot, storage = MemoryStorage())
+        storage = MemoryStorage()
+        dispatcher = Dispatcher(bot, storage=storage)
         HandlerRegisterInterface().register_handler(dispatcher)
         
         try:
             await dispatcher.start_polling()
         except Exception as _ex:
             return f"There is an exception - {_ex}"
+        finally:
+            await bot.close()
+            await storage.close()
+            await storage.wait_closed()
 
 
 if __name__ == "__main__":
-    asyncio.run(TelegramBotInterface().main())
+    try:
+        asyncio.run(TelegramBotInterface().main())
+    except KeyboardInterrupt:
+        asyncio.run(TelegramBotInterface().bot.close())
+        asyncio.run(TelegramBotInterface().storage.close())
+        asyncio.run(TelegramBotInterface().storage.wait_closed())
